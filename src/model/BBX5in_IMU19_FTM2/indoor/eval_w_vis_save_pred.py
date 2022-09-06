@@ -182,6 +182,8 @@ class Config:
         self.vis = self.args.vis # edit
         self.RGB_ts16_dfv3_path = ''
         self.vis_Cam_ID_ls = ['A', 'B', 'C', 'D', 'E']
+        self.text_start_col = 450
+        self.text_start_row = 1110
 
         # -------
         #  Color
@@ -729,16 +731,15 @@ def vis_tracklet(img, seq_in_BBX5_, subj_i, Cam_ID, Phone_PRED, Phone_GND, curr_
                 img = cv2.putText(img, text, top_left, \
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (subj_color[0] + 100, subj_color[1] + 100, subj_color[2] + 100), 2, cv2.LINE_AA)
 
-    # (450, 1100)
-    img = cv2.putText(img, '[Letter: Randomly Assigned Cam ID]-[Number: Associated Phone ID]', (450, 1110), \
+    img = cv2.putText(img, '[Letter: Randomly Assigned Cam ID]-[Number: Associated Phone ID]', (C.text_start_col, C.text_start_row), \
         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-    img = cv2.putText(img, 'GT:Phone ID Ground Truth', (450, 1160), \
+    img = cv2.putText(img, 'GT:Phone ID Ground Truth', (C.text_start_col, C.text_start_row + 50), \
         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
     # print('curr_IDP: ', curr_IDP, ', cumu_IDP: ', cumu_IDP)
     if curr_IDP == 1: color = (100, 100, 255)
     else: color = (100, 255, 100)
     text = 'Current IDP: {}%'.format(round(float(curr_IDP) * 100, 4)) + ', Cumulative IDP: {}%'.format(round(float(cumu_IDP) * 100, 4))
-    img = cv2.putText(img, text, (450, 1210), \
+    img = cv2.putText(img, text, (C.text_start_col, C.text_start_row + 100), \
         cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
     return img
 
@@ -1180,7 +1181,7 @@ def eval_association():
                 #         break
 
                 print(); print() # debug
-                print('first_other_idx: ', first_other_idx)
+                # print('first_other_idx: ', first_other_idx)
                 print('seq_subj_i_in_view_ls_: ', seq_subj_i_in_view_ls_)
 
                 C.ts16_dfv3_to_pred_BBX5_labels[ts16_dfv3] = defaultdict()
@@ -1452,6 +1453,7 @@ def eval_association():
                     'row_ind_Cam' : row_ind_Cam, 'col_ind_Cam' : col_ind_Cam, \
                     'row_ind_Phone' : row_ind_Phone, 'col_ind_Phone' : col_ind_Phone}
 
+                print(la_res_dict)
                 #  >>> Vis Matched Results >>>
                 if C.vis:
                     for i, seq_subj_i in enumerate(seq_subj_i_in_view_ls_):
@@ -1465,7 +1467,6 @@ def eval_association():
                             C.scene_eval_stats['hg']['Phone']['cumu_Phone_IDP'] # cumu_IDP
                             )
                 #  <<< Vis Matched Results <<<
-                print(la_res_dict)
 
                 C.ts16_dfv3_to_eval_stats[ts16_dfv3] = la_res_dict
                 C.eval_log_file.write(str(la_res_dict) + '\n\n')

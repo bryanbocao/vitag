@@ -690,7 +690,7 @@ def Simplified_Bhatt_dist(mu0, std0, mu1, std1):
     term1 = np.divide(sqrt_diff_mu, sum_var)
     return np.add(term0, term1)
 
-def vis_tracklet(img, seq_in_BBX5_, subj_i, Cam_ID, Phone_PRED, Phone_GND):
+def vis_tracklet(img, seq_in_BBX5_, subj_i, Cam_ID, Phone_PRED, Phone_GND, curr_IDP, cumu_IDP):
     # subj_i, \
     # rand_seq_subj_i_in_view_ls[i], \
     # gd_pred_phone_i_Phone_ls[i], # PRED
@@ -729,12 +729,19 @@ def vis_tracklet(img, seq_in_BBX5_, subj_i, Cam_ID, Phone_PRED, Phone_GND):
             if k_i == C.recent_K - 2:
                 text = Cam_ID + ':' + str(C.subjects[Phone_PRED]) + ' GT: ' + str(C.subjects[Phone_GND])
                 img = cv2.putText(img, text, top_left, \
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (subj_color[0] + 70, subj_color[1] + 70, subj_color[2] + 70), 2, cv2.LINE_AA)
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (subj_color[0] + 100, subj_color[1] + 100, subj_color[2] + 100), 2, cv2.LINE_AA)
 
-
-    # (450, 1300)
-    img = cv2.putText(img, '[Letter: Randomly Assigned Cam ID]:[Estimated Output] GT: Ground Truth', (450, 100), \
+    # (450, 1100)
+    img = cv2.putText(img, '[Letter: Randomly Assigned Cam ID]:[Number: Associated Phone ID]', (450, 1110), \
         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+    img = cv2.putText(img, 'GT: Phone ID Ground Truth', (450, 1160), \
+        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+    # print('curr_IDP: ', curr_IDP, ', cumu_IDP: ', cumu_IDP)
+    if curr_IDP == 1: color = (100, 100, 255)
+    else: color = (100, 255, 100)
+    text = 'Current IDP: {}%'.format(round(float(curr_IDP) * 100, 4)) + ', Cumulative IDP: {}%'.format(round(float(cumu_IDP) * 100, 4))
+    img = cv2.putText(img, text, (450, 1210), \
+        cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
     return img
 
 def prepare_testing_data():
@@ -883,6 +890,10 @@ def prepare_testing_data():
 
             # Last frame of a window
             subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + C.RGBh_ts16_dfv3_ls[win_i + C.recent_K - 1] + '_anonymized.jpg'
+
+            # First frame of a window
+            # subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + C.RGBh_ts16_dfv3_ls[win_i] + '_anonymized.jpg'
+
             # print(); print() # debug
             # print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
             img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
@@ -1291,17 +1302,6 @@ def eval_association():
                             gd_ts16_dfv3_Phone_TN += 1
                             gd_ts16_dfv3_Phone_correct_num += 1
 
-                    #  >>> Vis >>>
-                    if C.vis:
-                        seq_in_BBX5_ = C.seq_in_BBX5_dict[(win_i, seq_subj_i)]
-                        img = vis_tracklet(img, np.squeeze(seq_in_BBX5_, axis=0), \
-                            seq_subj_i, \
-                            C.vis_Cam_ID_ls[rand_seq_subj_i_in_view_ls[seq_subj_i]], \
-                            gd_pred_phone_i_Phone_ls[i], # PRED
-                            seq_subj_i # GND
-                            )
-                    #  <<< Vis <<<
-
                 # >>> IDSWITCH >>>
                 # if win_i > 0:
                 #     for id_i, id in enumerate(gd_pred_phone_i_Phone_ls):
@@ -1498,9 +1498,18 @@ def eval_association():
                     'row_ind_Phone' : row_ind_Phone, 'col_ind_Phone' : col_ind_Phone}
 
                 #  >>> Vis Matched Results >>>
-                # if C.vis: img = vis_tracklet(img, np.squeeze(seq_in_BBX5_r, axis=0), rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(subj_i_r)])
+                if C.vis:
+                    for i, seq_subj_i in enumerate(seq_subj_i_in_view_ls_):
+                        seq_in_BBX5_ = C.seq_in_BBX5_dict[(win_i, seq_subj_i)]
+                        img = vis_tracklet(img, np.squeeze(seq_in_BBX5_, axis=0), \
+                            seq_subj_i, \
+                            C.vis_Cam_ID_ls[rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(seq_subj_i)]], \
+                            col_ind_Phone[i], # PRED
+                            seq_subj_i, # GND
+                            C.scene_eval_stats['hg']['Phone']['ts16_dfv3_Phone_IDP'], # curr_IDP
+                            C.scene_eval_stats['hg']['Phone']['cumu_Phone_IDP'] # cumu_IDP
+                            )
                 #  <<< Vis Matched Results <<<
-
                 print(la_res_dict)
 
                 C.ts16_dfv3_to_eval_stats[ts16_dfv3] = la_res_dict

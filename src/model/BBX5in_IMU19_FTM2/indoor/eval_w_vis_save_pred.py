@@ -117,6 +117,7 @@ class Config:
         self.parser.add_argument('-tt', '--test_type', type=str, default='random', help='random | crowded') # edit
         self.parser.add_argument('-fps', '--fps', type=int, default=10, help='10 | 3 | 1') # edit
         self.parser.add_argument('-v', '--vis', action='store_true', help='Visualization')
+        self.parser.add_argument('-vo', '--vis_Others', action='store_true', help='Visualization')
         self.parser.add_argument('-k', '--recent_K', type=int, default=10, help='Window length') # edit
         self.parser.add_argument('-l', '--loss', type=str, default='mse', help='mse: Mean Squared Error | b: Bhattacharyya Loss')
         self.parser.add_argument('-bw', '--best_weight', action='store_true')
@@ -162,8 +163,7 @@ class Config:
         self.seq_id_ls = sorted([seq_id_path[-15:] for seq_id_path in self.seq_id_path_ls])
         self.seq_id = self.seq_id_ls[0]
         self.test_seq_id = self.seq_id_ls[self.args.test_seq_id_idx]
-
-        self.img_type = 'RGB'
+        print('self.test_seq_id: ', self.test_seq_id)
 
         # >>> Normalize weights to sum up to 1 >>>
         self.w_dct = {'Cam': defaultdict(), 'Phone': defaultdict()}
@@ -180,9 +180,8 @@ class Config:
         # ---------------
         #  Visualization
         # ---------------
-        self.vis = False # edit
-        self.vis_Others = False # edit
-        self.vis_eval = False # edit
+        self.vis = self.args.vis # edit
+        self.vis_Others = self.args.vis_Others # edit
         self.RGB_ts16_dfv3_path = ''
 
         # -------
@@ -205,7 +204,7 @@ class Config:
         print('self.seq_id_path_ls: ', self.seq_id_path_ls)
         print('self,seq_id_ls: ', self.seq_id_ls)
 
-        self.img_type = 'RGBh_ts16_dfv2'
+        self.img_type = 'RGBh_ts16_dfv4_anonymized'
         self.img_path = self.seq_path + '/' + self.img_type
         self.RGBh_ts16_dfv3_ls = []
 
@@ -221,7 +220,11 @@ class Config:
         # self.subj_to_offset = defaultdict()
         # self.start_ots, self.end_ots, self.subj_to_offset = get_start_end_ts_update_phone_with_offsets(self.seq_id, self.meta_path)
         # self.seq_path_for_model = self.seq_root_path_for_model + '/scene' + str(self.scene_id) + '/' + self.seq_id
-        self.img_path = self.seq_path + '/' + self.img_type
+
+        # self.img_path = self.seq_path + '/' + self.img_type
+        self.img_path = '../../../../Data/datasets/RAN/seqs/indoor/scene0/' + self.test_seq_id + '/' + self.img_type
+        print('self.img_path: ', self.img_path)
+
         # self.RGB_ts16_dfv3_ls_path = self.seq_path_for_model + '/RGB_ts16_dfv3_ls.json'
         # with open(self.RGB_ts16_dfv3_ls_path, 'r') as f:
         #     self.RGB_ts16_dfv3_ls = json.load(f)
@@ -707,6 +710,9 @@ def vis_tracklet(img, seq_in_BBX5_, subj):
     if subj in C.subjects: subj_color = C.color_dict[C.color_ls[C.subjects.index(subj)]]
     else: subj_color = C.color_dict[C.color_ls[-1]]
 
+    # print('C.subjects: ', C.subjects)
+    # print('subj: ', subj)
+
     for k_i in range(C.recent_K):
         if k_i < len(seq_in_BBX5_) - 1:
             top_left = (int(seq_in_BBX5_[k_i, 0]) - int(seq_in_BBX5_[k_i, 3] / 2), \
@@ -714,7 +720,9 @@ def vis_tracklet(img, seq_in_BBX5_, subj):
             bottom_right = (int(seq_in_BBX5_[k_i, 0]) + int(seq_in_BBX5_[k_i, 3] / 2), \
                         int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
             img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
-            img = cv2.putText(img, subj, top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, subj_color, 2, cv2.LINE_AA)
+            # print('subj_color: ', subj_color, ', subj: ', subj, ', top_left: ', top_left, ', bottom_right: ', bottom_right)
+            if k_i == 0: img = cv2.putText(img, str(subj), top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, subj_color, 2, cv2.LINE_AA)
+    return img
 
 def prepare_testing_data():
     # seq_in_BBX5_dfv3_ls, seq_in_BBX5_Others_dfv3_ls = [], []
@@ -741,7 +749,6 @@ def prepare_testing_data():
     C.seq_id = C.seq_id_ls[C.seq_idx_idx] # edit
     print()
     C.seq_path = C.seq_id_path_ls[C.seq_id_idx]
-    C.img_path = C.seq_path + '/' + C.img_type
 
     C.seq_date = C.seq_id[:8]
     C.seq_path_for_model = C.seq4model_root_path + '/' + C.seq_id
@@ -773,7 +780,9 @@ def prepare_testing_data():
     # print('C.seq_path: ', C.seq_path)
     # print('C.seq_path_for_model: ', C.seq_path_for_model)
     # print('len(C.RGB_ts16_dfv3_valid_ls): ', len(C.RGB_ts16_dfv3_valid_ls)) # e.g. 1800
-    if C.vis: C.img_path = C.seq_path + '/' + C.img_type
+    if C.vis:
+        C.img_path = '../../../../Data/datasets/RAN/seqs/indoor/scene0/' + C.test_seq_id + '/' + C.img_type
+        print('C.img_path: ', C.img_path)
 
     # ------------------------------------------
     #  Synchronized data: BBX5,IMU19_sync_dfv3
@@ -856,10 +865,17 @@ def prepare_testing_data():
         # -----------------------------------------------------------------------------
         #  >>> Vis >>>
         if C.vis:
-            subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
+            # subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
+            # print('C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]: ', C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1])
+
+            # Last frame of a window
+            subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + C.RGBh_ts16_dfv3_ls[win_i + C.recent_K - 1] + '_anonymized.jpg'
             print(); print() # debug
             print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
             img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
+            # if '20201228' in C.seq_id:
+            #     img = img[450:1730, 350:1070]
+            # cv2.imshow('img', img); cv2.waitKey(0) # Debug
         #  <<< Vis <<<
 
         for subj_i in range(len(C.subjects)):
@@ -872,7 +888,7 @@ def prepare_testing_data():
 
             #  >>> Vis >>>
             # if C.vis: vis_tracklet(img, seq_in_BBX5_, C.subjects[subj_i])
-            if C.vis: vis_tracklet(img, seq_in_BBX5_, C.subjects[subj_i])
+            if C.vis: img = vis_tracklet(img, seq_in_BBX5_, C.subjects[subj_i])
             #  <<< Vis <<<
         #  >>> Vis >>>
         if C.vis:

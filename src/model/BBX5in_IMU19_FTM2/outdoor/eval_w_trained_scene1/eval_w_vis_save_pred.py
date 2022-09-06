@@ -111,6 +111,7 @@ class Config:
         self.parser.add_argument('-tt', '--test_type', type=str, default='rand_ss', help='rand_ss | crowded') # edit
         self.parser.add_argument('-fps', '--fps', type=int, default=10, help='10 | 3 | 1') # edit
         self.parser.add_argument('-v', '--vis', action='store_true', help='Visualization')
+        self.parser.add_argument('-vo', '--vis_Others', action='store_true', help='Visualization')
         self.parser.add_argument('-k', '--recent_K', type=int, default=10, help='Window length') # edit
         self.parser.add_argument('-l', '--loss', type=str, default='mse', help='mse: Mean Squared Error | b: Bhattacharyya Loss')
         self.parser.add_argument('-bw', '--best_weight', action='store_true')
@@ -207,7 +208,7 @@ class Config:
 
         self.meta_path = self.exp_path_for_model + '/meta.csv'
 
-        self.img_type = 'RGB'
+        self.img_type = 'RGB_ts16_dfv4_anonymized' # 'RGB'
 
         # >>> Normalize weights to sum up to 1 >>>
         self.w_dct = {'Cam': defaultdict(), 'Phone': defaultdict()}
@@ -224,10 +225,16 @@ class Config:
         # ---------------
         #  Visualization
         # ---------------
-        self.vis = False # edit
-        self.vis_Others = False # edit
+        self.vis = self.args.vis # edit
+        self.vis_Others = self.args.vis_Others # edit
         self.vis_eval = False # edit
         self.RGB_ts16_dfv3_path = ''
+        self.vis_Cam_ID_ls = []
+        for i in range(20):
+            self.vis_Cam_ID_ls.append(chr(ord('A') + i))
+        print('self.vis_Cam_ID_ls: ', self.vis_Cam_ID_ls)
+        self.text_start_col = 10
+        self.text_start_row = 600
 
         # -------
         #  Color
@@ -263,7 +270,9 @@ class Config:
         self.subj_to_offset = defaultdict()
         # self.start_ots, self.end_ots, self.subj_to_offset = get_start_end_ts_update_phone_with_offsets(self.seq_id, self.meta_path)
         self.seq_path_for_model = self.seq_root_path_for_model + '/scene' + str(self.scene_id) + '/' + self.seq_id
-        self.img_path = self.seq_path + '/' + self.img_type
+        # self.img_path = self.seq_path + '/' + self.img_type
+        self.img_path = '../../../../../Data/datasets/RAN/seqs/outdoor/scene1/' + self.seq_id + '/' + self.img_type
+        print('self.img_path: ', self.img_path)
         self.RGB_ts16_dfv3_ls_path = self.seq_path_for_model + '/RGB_ts16_dfv3_ls.json'
         # with open(self.RGB_ts16_dfv3_ls_path, 'r') as f:
         #     self.RGB_ts16_dfv3_ls = json.load(f)
@@ -729,7 +738,7 @@ def Simplified_Bhatt_dist(mu0, std0, mu1, std1):
     term1 = np.divide(sqrt_diff_mu, sum_var)
     return np.add(term0, term1)
 
-def vis_tracklet(img, seq_in_BBX5_, subj):
+# def vis_tracklet(img, seq_in_BBX5_, subj):
     # print(); print() # debug
     # print(C.subjects[subj_i], ', np.shape(seq_in_BBX5_): ', np.shape(seq_in_BBX5_)) # e.g. (10, 5)
     # print('seq_in_BBX5_[:, 0]: ', seq_in_BBX5_[:, 0]) # col
@@ -758,6 +767,64 @@ def vis_tracklet(img, seq_in_BBX5_, subj):
                         int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
             img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
             img = cv2.putText(img, subj, top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, subj_color, 2, cv2.LINE_AA)
+
+def vis_tracklet(img, seq_in_BBX5_, subj_i, Cam_ID, Phone_PRED, Phone_GND, curr_IDP, cumu_IDP):
+    # subj_i, \
+    # rand_seq_subj_i_in_view_ls[i], \
+    # gd_pred_phone_i_Phone_ls[i], # PRED
+    # seq_subj_i # GND
+    # )
+    # print(); print() # debug
+    # print(C.subjects[subj_i], ', np.shape(seq_in_BBX5_): ', np.shape(seq_in_BBX5_)) # e.g. (10, 5)
+    # print('seq_in_BBX5_[:, 0]: ', seq_in_BBX5_[:, 0]) # col
+    # print('seq_in_BBX5_[:, 1]: ', seq_in_BBX5_[:, 1]) # row
+    # print('seq_in_BBX5_[:, 2]: ', seq_in_BBX5_[:, 2]) # depth
+    # print('seq_in_BBX5_[:, 3]: ', seq_in_BBX5_[:, 3]) # width
+    # print('seq_in_BBX5_[:, 4]: ', seq_in_BBX5_[:, 4]) # height
+    '''
+    e.g.
+    Sid , np.shape(seq_in_BBX5_):  (10, 5)
+    seq_in_BBX5_[:, 0]:  [866. 833. 809.   0.   0.   0.   0. 676. 653. 638.]
+    seq_in_BBX5_[:, 1]:  [427. 427. 432.   0.   0.   0.   0. 446. 451. 485.]
+    seq_in_BBX5_[:, 2]:  [9.25371265 9.26818466 8.887537   0.         0.         0.
+     0.         7.5010891  8.03569031 8.17784595]
+    seq_in_BBX5_[:, 3]:  [40. 35. 32.  0.  0.  0.  0. 34. 64. 67.]
+    seq_in_BBX5_[:, 4]:  [ 46.  46.  62.   0.   0.   0.   0.  63.  77. 144.]
+    '''
+    subj_color = C.color_dict[C.color_ls[subj_i % len(C.subjects)]]
+
+    # print('C.subjects: ', C.subjects)
+    # print('subj: ', subj)
+
+    for k_i in range(C.recent_K):
+        if k_i < len(seq_in_BBX5_) - 1:
+            top_left = (int(seq_in_BBX5_[k_i, 0]) - int(seq_in_BBX5_[k_i, 3] / 2), \
+                        int(seq_in_BBX5_[k_i, 1]) - int(seq_in_BBX5_[k_i, 4] / 2))
+            bottom_right = (int(seq_in_BBX5_[k_i, 0]) + int(seq_in_BBX5_[k_i, 3] / 2), \
+                        int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
+            img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
+            # print('subj_color: ', subj_color, ', subj: ', subj, ', top_left: ', top_left, ', bottom_right: ', bottom_right)
+            if k_i == C.recent_K - 2:
+                if isinstance(Phone_PRED, str):
+                    text = Cam_ID + ':' + Phone_PRED
+                if isinstance(Phone_GND, str):
+                    text += ' GT: ' + Phone_GND
+                else:
+                    text = Cam_ID + ':' + str(C.subjects[Phone_PRED]) + ' GT: ' + str(C.subjects[Phone_GND])
+                img = cv2.putText(img, text, top_left, \
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (subj_color[0] + 100, subj_color[1] + 100, subj_color[2] + 100), 2, cv2.LINE_AA)
+
+    img = cv2.putText(img, '[Letter: Randomly Assigned Cam ID]-[Number: Associated Phone ID]', (C.text_start_col, C.text_start_row), \
+        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+    img = cv2.putText(img, 'GT:Phone ID Ground Truth', (C.text_start_col, C.text_start_row + 50), \
+        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+    # print('curr_IDP: ', curr_IDP, ', cumu_IDP: ', cumu_IDP)
+    if curr_IDP == 1: color = (100, 100, 230)
+    else: color = (100, 230, 100)
+    text = 'Current IDP: {}%'.format(round(float(curr_IDP) * 100, 4)) + ', Cumulative IDP: {}%'.format(round(float(cumu_IDP) * 100, 4))
+    img = cv2.putText(img, text, (C.text_start_col, C.text_start_row + 100), \
+        cv2.FONT_HERSHEY_SIMPLEX, 1, color, 2, cv2.LINE_AA)
+    return img
 
 def prepare_testing_data():
     seq_in_BBX5_dfv3_ls, seq_in_BBX5_Others_dfv3_ls = [], []
@@ -795,7 +862,8 @@ def prepare_testing_data():
     C.seq_date = C.seq_id[:8]
     C.start_ots, C.end_ots, C.subj_to_offset = get_start_end_ts_update_phone_with_offsets(C.seq_id, C.meta_path)
     C.seq_path_for_model = C.seq_root_path_for_model + '/scene' + str(C.scene_id) + '/' + C.seq_id
-    C.img_path = C.seq_path + '/' + C.img_type
+    # C.img_path = C.seq_path + '/' + C.img_type
+    C.img_path = '../../../../../Data/datasets/RAN/seqs/outdoor/scene1/' + C.seq_id + '/' + C.img_type
     C.RGB_ts16_dfv3_ls_path = C.seq_path_for_model + '/RGB_ts16_dfv3_ls.json'
     with open(C.RGB_ts16_dfv3_ls_path, 'r') as f:
         C.RGB_ts16_dfv3_ls = json.load(f)
@@ -822,7 +890,10 @@ def prepare_testing_data():
     print('C.seq_path: ', C.seq_path)
     print('C.seq_path_for_model: ', C.seq_path_for_model)
     print('len(C.RGB_ts16_dfv3_valid_ls): ', len(C.RGB_ts16_dfv3_valid_ls)) # e.g. 1800
-    if C.vis: C.img_path = C.seq_path + '/' + C.img_type
+    if C.vis:
+        # C.img_path = C.seq_path + '/' + C.img_type
+        C.img_path = '../../../../../Data/datasets/RAN/seqs/outdoor/scene1/' + C.seq_id + '/' + C.img_type
+        # print('C.img_path: ', C.img_path)
 
     # ------------------------------------------
     #  Synchronized data: BBX5,IMU19_sync_dfv3
@@ -901,10 +972,12 @@ def prepare_testing_data():
         seq_subj_i_in_view_ls_ = []
         #  >>> Vis >>>
         if C.vis:
-            subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
-            print(); print() # debug
-            print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
+            # subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
+            subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1] + '_anonymized.jpg'
+            # print(); print() # debug
+            # print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
             img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
+            # cv2.imshow('img', img); cv2.waitKey(0)
         #  <<< Vis <<<
 
         for subj_i in range(len(C.subjects) - 1):
@@ -917,11 +990,10 @@ def prepare_testing_data():
 
             #  >>> Vis >>>
             # if C.vis: vis_tracklet(img, seq_in_BBX5_, C.subjects[subj_i])
-            if C.vis: vis_tracklet(img, seq_in_BBX5_, C.subjects[subj_i])
             #  <<< Vis <<<
         #  >>> Vis >>>
-        if C.vis:
-            cv2.imshow('img', img); cv2.waitKey(0)
+        # if C.vis:
+        #     cv2.imshow('img', img); cv2.waitKey(0)
         #  <<< Vis <<<
         C.seq_subj_i_in_view_dict[C.RGB_ts16_dfv3_valid_ls[win_i]] = seq_subj_i_in_view_ls_
 
@@ -962,11 +1034,12 @@ def prepare_testing_data():
     for win_i in range(C.n_wins):
         seq_subj_i_in_view_ls_ = []
         #  >>> Vis >>>
-        if C.vis_Others:
-            subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
-            print(); print() # debug
-            print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
-            img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
+        # if C.vis_Others:
+        #     # subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
+        #     subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1] + '_anonymized.jpg'
+        #     print(); print() # debug
+        #     print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
+        #     img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
         #  <<< Vis <<<
         for subj_i_, subj_ in enumerate(C.Others_id_ls):
             # print(); print() # debug
@@ -985,11 +1058,11 @@ def prepare_testing_data():
                 C.seq_in_BBX5_Others_dict[(win_i, subj_i)] = np.expand_dims(seq_in_BBX5_Others_, axis=0)
 
             #  >>> Vis >>>
-            if C.vis_Others: vis_tracklet(img, seq_in_BBX5_Others_, subj_)
+            # if C.vis_Others: vis_tracklet(img, seq_in_BBX5_Others_, subj_)
             #  <<< Vis <<<
         #  >>> Vis >>>
-        if C.vis_Others:
-            cv2.imshow('img', img); cv2.waitKey(0)
+        # if C.vis_Others:
+        #     cv2.imshow('img', img); cv2.waitKey(0)
         #  <<< Vis <<<
         if C.RGB_ts16_dfv3_valid_ls[win_i] not in C.seq_subj_i_in_view_dict:
             C.seq_subj_i_in_view_dict[C.RGB_ts16_dfv3_valid_ls[win_i]] = seq_subj_i_in_view_ls_
@@ -1094,12 +1167,30 @@ def prepare_testing_data():
 def eval_association():
     for win_i in range(C.n_wins):
         ts16_dfv3 = C.RGB_ts16_dfv3_valid_ls[win_i]
+        #  >>> Vis >>>
+        if C.vis:
+            # subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
+            # print('C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]: ', C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1])
+
+            # Last frame of a window
+            subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1 - 1] + '_anonymized.jpg'
+            # print(); print() # debug
+            # print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
+            img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
+            # if '20201228' in C.seq_id:
+            #     img = img[450:1730, 350:1070]
+            # cv2.imshow('img', img); cv2.waitKey(0) # Debug
+        #  <<< Vis <<<
         if ts16_dfv3 in C.seq_subj_i_in_view_dict.keys():
             print()
             seq_subj_i_in_view_ls_ = C.seq_subj_i_in_view_dict[ts16_dfv3]
             print('seq_subj_i_in_view_ls_: ', seq_subj_i_in_view_ls_) # e.g. [1, 2, 3, 4]
             print('Model: ', C.model_weights_path_to_save)
             print(C.args)
+
+            rand_seq_subj_i_in_view_ls = copy.deepcopy(seq_subj_i_in_view_ls_)
+            random.shuffle(rand_seq_subj_i_in_view_ls)
+            print('rand_seq_subj_i_in_view_ls: ', rand_seq_subj_i_in_view_ls)
 
             n = len(seq_subj_i_in_view_ls_)
             if n > 0:
@@ -1246,9 +1337,9 @@ def eval_association():
                 C.ts16_dfv3_to_pred_BBX5_labels[ts16_dfv3]['gd'] = defaultdict()
                 C.ts16_dfv3_to_pred_BBX5_labels[ts16_dfv3]['gd']['gd_pred_phone_i_Cam_ls'] = gd_pred_phone_i_Cam_ls
 
-                # -----
+                # -------
                 #  Phone
-                # -----
+                # -------
                 gd_pred_phone_i_Phone_ls = []
                 for i in range(np.shape(A_Phone_arr)[1]):
                     col = list(A_Phone_arr[:, i])
@@ -1465,12 +1556,47 @@ def eval_association():
                     'row_ind_Cam' : row_ind_Cam, 'col_ind_Cam' : col_ind_Cam, \
                     'row_ind_Phone' : row_ind_Phone, 'col_ind_Phone' : col_ind_Phone}
 
+                # print(C.seq_in_BBX5_dict.keys())
+                # print(C.seq_in_BBX5_Others_dict.keys())
+
                 print(la_res_dict)
+                #  >>> Vis Matched Results >>>
+                if C.vis:
+                    for i, seq_subj_i in enumerate(seq_subj_i_in_view_ls_):
+                        # Phone holders
+                        if (win_i, i) in C.seq_in_BBX5_dict.keys():
+                            seq_in_BBX5_ = C.seq_in_BBX5_dict[(win_i, i)]
+                            img = vis_tracklet(img, np.squeeze(seq_in_BBX5_, axis=0), \
+                                seq_subj_i, \
+                                C.vis_Cam_ID_ls[rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(seq_subj_i)]], \
+                                col_ind_Phone[i], # PRED
+                                seq_subj_i, # GND
+                                C.scene_eval_stats['hg']['Phone']['ts16_dfv3_Phone_IDP'], # curr_IDP
+                                C.scene_eval_stats['hg']['Phone']['cumu_Phone_IDP'] # cumu_IDP
+                                )
+
+                        # Others
+                        elif (win_i, seq_subj_i) in C.seq_in_BBX5_Others_dict.keys():
+                            if i >= first_other_idx: PRED = 'Others'
+                            else: PRED = col_ind_Phone[i]
+                            seq_in_BBX5_Others_ = C.seq_in_BBX5_Others_dict[(win_i, seq_subj_i)]
+                            img = vis_tracklet(img, np.squeeze(seq_in_BBX5_Others_, axis=0), \
+                                seq_subj_i, \
+                                C.vis_Cam_ID_ls[rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(seq_subj_i)]], \
+                                PRED, # PRED
+                                'Others', # GND
+                                C.scene_eval_stats['hg']['Phone']['ts16_dfv3_Phone_IDP'], # curr_IDP
+                                C.scene_eval_stats['hg']['Phone']['cumu_Phone_IDP'] # cumu_IDP
+                                )
+                #  <<< Vis Matched Results <<<
 
                 C.ts16_dfv3_to_eval_stats[ts16_dfv3] = la_res_dict
                 C.eval_log_file.write(str(la_res_dict) + '\n\n')
                 C.eval_log_file.flush()
                 # e.g. shape(A):  (3, 5) , seq_subj_i_in_view_ls_:  [0, 1, 4] , row_ind:  [0 1 2] , col_ind:  [3 2 4]
+
+        if C.vis:
+            cv2.imshow('img', img); cv2.waitKey(10)
 
     print()
 

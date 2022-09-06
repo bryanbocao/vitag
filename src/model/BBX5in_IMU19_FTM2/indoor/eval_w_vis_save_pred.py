@@ -117,7 +117,6 @@ class Config:
         self.parser.add_argument('-tt', '--test_type', type=str, default='random', help='random | crowded') # edit
         self.parser.add_argument('-fps', '--fps', type=int, default=10, help='10 | 3 | 1') # edit
         self.parser.add_argument('-v', '--vis', action='store_true', help='Visualization')
-        self.parser.add_argument('-vo', '--vis_Others', action='store_true', help='Visualization')
         self.parser.add_argument('-k', '--recent_K', type=int, default=10, help='Window length') # edit
         self.parser.add_argument('-l', '--loss', type=str, default='mse', help='mse: Mean Squared Error | b: Bhattacharyya Loss')
         self.parser.add_argument('-bw', '--best_weight', action='store_true')
@@ -181,7 +180,6 @@ class Config:
         #  Visualization
         # ---------------
         self.vis = self.args.vis # edit
-        self.vis_Others = self.args.vis_Others # edit
         self.RGB_ts16_dfv3_path = ''
         self.vis_Cam_ID_ls = ['A', 'B', 'C', 'D', 'E']
 
@@ -951,49 +949,6 @@ def prepare_testing_data():
                 seq_in_FTM2_dfv3_ls.append(seq_in_FTM2_)
                 C.seq_in_FTM2_dict[(win_i, subj_i)] = np.expand_dims(seq_in_FTM2_, axis=0)
             # <<< FTM2 <<<
-
-    # ---------------------
-    #  Prepare BBX5 Others
-    # ---------------------
-    # for win_i in range(C.n_wins):
-    #     seq_subj_i_in_view_ls_ = []
-    #     #  >>> Vis >>>
-    #     if C.vis_Others:
-    #         subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
-    #         print(); print() # debug
-    #         print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
-    #         img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
-    #     #  <<< Vis <<<
-    #     for subj_i_, subj_ in enumerate(C.Others_id_ls):
-    #         # print(); print() # debug
-    #         # print('subj_i_: ', subj_i_, ', subj_', subj_)
-    #         subj_i = subj_i_ + len(C.subjects) - 1
-    #         seq_in_BBX5_Others_ = C.BBX5_Others_sync_dfv3[win_i : win_i + C.recent_K, subj_i_, :]
-    #         # print('np.shape(seq_in_BBX5_Others_): ', np.shape(seq_in_BBX5_Others_))
-    #
-    #         # BBX5 in the view
-    #         if seq_in_BBX5_Others_[:, 3].any() != 0 and seq_in_BBX5_Others_[:, 4].any() != 0 \
-    #             and len(seq_in_BBX5_Others_) == C.recent_K:
-    #             # print(); print() # debug
-    #             # print('seq_in_BBX5_Others_: ', seq_in_BBX5_Others_)
-    #             seq_in_BBX5_Others_dfv3_ls.append(seq_in_BBX5_Others_)
-    #             seq_subj_i_in_view_ls_.append(subj_i)
-    #             C.seq_in_BBX5_Others_dict[(win_i, subj_i)] = np.expand_dims(seq_in_BBX5_Others_, axis=0)
-    #
-    #         #  >>> Vis >>>
-    #         if C.vis_Others: vis_tracklet(img, seq_in_BBX5_Others_, subj_)
-    #         #  <<< Vis <<<
-    #     #  >>> Vis >>>
-    #     if C.vis_Others:
-    #         cv2.imshow('img', img); cv2.waitKey(0)
-    #     #  <<< Vis <<<
-    #     if C.RGB_ts16_dfv3_valid_ls[win_i] not in C.seq_subj_i_in_view_dict:
-    #         C.seq_subj_i_in_view_dict[C.RGB_ts16_dfv3_valid_ls[win_i]] = seq_subj_i_in_view_ls_
-    #     else:
-    #         C.seq_subj_i_in_view_dict[C.RGB_ts16_dfv3_valid_ls[win_i]].extend(seq_subj_i_in_view_ls_)
-    #     # print(); print() # debug
-    #     # print('C.seq_subj_i_in_view_dict[C.RGB_ts16_dfv3_valid_ls[win_i]]: ', C.seq_subj_i_in_view_dict[C.RGB_ts16_dfv3_valid_ls[win_i]])
-    #     # e.g. [0, 1, 2, 10, 11, 13, 14]
 
     C.seq_in_BBX5 = np.array(seq_in_BBX5_dfv3_ls)
     print(); print() # debug

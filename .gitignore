@@ -1,0 +1,7 @@
+RAN4model
+*.pkl
+*.json
+*.zip
+*.ckpt.*
+*.jpg
+*anonymized*

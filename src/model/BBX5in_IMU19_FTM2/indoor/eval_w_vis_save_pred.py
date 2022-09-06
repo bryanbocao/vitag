@@ -1113,7 +1113,7 @@ def eval_association():
                     # print('np.shape(seq_in_BBX5_r): ', np.shape(seq_in_BBX5_r));
                     # e.g. (1, 10, 5)
                     #  >>> Vis >>>
-                    if C.vis: img = vis_tracklet(img, np.squeeze(seq_in_BBX5_r, axis=0), rand_seq_subj_i_in_view_ls[subj_i_r])
+                    if C.vis: img = vis_tracklet(img, np.squeeze(seq_in_BBX5_r, axis=0), rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(subj_i_r)])
                     #  <<< Vis <<<
 
                     # if subj_i_r in range(len(C.subjects)):
@@ -1255,9 +1255,9 @@ def eval_association():
                 C.ts16_dfv3_to_pred_BBX5_labels[ts16_dfv3]['gd'] = defaultdict()
                 C.ts16_dfv3_to_pred_BBX5_labels[ts16_dfv3]['gd']['gd_pred_phone_i_Cam_ls'] = gd_pred_phone_i_Cam_ls
 
-                # -----
+                # -------
                 #  Phone
-                # -----
+                # -------
                 gd_pred_phone_i_Phone_ls = []
                 for i in range(np.shape(A_Phone_arr)[1]):
                     col = list(A_Phone_arr[:, i])
@@ -1475,6 +1475,10 @@ def eval_association():
                     'scene_eval_stats': C.scene_eval_stats, \
                     'row_ind_Cam' : row_ind_Cam, 'col_ind_Cam' : col_ind_Cam, \
                     'row_ind_Phone' : row_ind_Phone, 'col_ind_Phone' : col_ind_Phone}
+
+                #  >>> Vis Matched Results >>>
+                if C.vis: img = vis_tracklet(img, np.squeeze(seq_in_BBX5_r, axis=0), rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(subj_i_r)])
+                #  <<< Vis Matched Results <<<
 
                 print(la_res_dict)
 

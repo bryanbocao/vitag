@@ -732,9 +732,9 @@ def vis_tracklet(img, seq_in_BBX5_, subj_i, Cam_ID, Phone_PRED, Phone_GND, curr_
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (subj_color[0] + 100, subj_color[1] + 100, subj_color[2] + 100), 2, cv2.LINE_AA)
 
     # (450, 1100)
-    img = cv2.putText(img, '[Letter: Randomly Assigned Cam ID]:[Number: Associated Phone ID]', (450, 1110), \
+    img = cv2.putText(img, '[Letter: Randomly Assigned Cam ID]-[Number: Associated Phone ID]', (450, 1110), \
         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-    img = cv2.putText(img, 'GT: Phone ID Ground Truth', (450, 1160), \
+    img = cv2.putText(img, 'GT:Phone ID Ground Truth', (450, 1160), \
         cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
     # print('curr_IDP: ', curr_IDP, ', cumu_IDP: ', cumu_IDP)
     if curr_IDP == 1: color = (100, 100, 255)

@@ -183,6 +183,7 @@ class Config:
         self.vis = self.args.vis # edit
         self.vis_Others = self.args.vis_Others # edit
         self.RGB_ts16_dfv3_path = ''
+        self.vis_Cam_ID_ls = ['A', 'B', 'C', 'D', 'E']
 
         # -------
         #  Color
@@ -689,7 +690,7 @@ def Simplified_Bhatt_dist(mu0, std0, mu1, std1):
     term1 = np.divide(sqrt_diff_mu, sum_var)
     return np.add(term0, term1)
 
-def vis_tracklet(img, seq_in_BBX5_, subj):
+def vis_tracklet(img, seq_in_BBX5_, subj_i):
     # print(); print() # debug
     # print(C.subjects[subj_i], ', np.shape(seq_in_BBX5_): ', np.shape(seq_in_BBX5_)) # e.g. (10, 5)
     # print('seq_in_BBX5_[:, 0]: ', seq_in_BBX5_[:, 0]) # col
@@ -707,8 +708,7 @@ def vis_tracklet(img, seq_in_BBX5_, subj):
     seq_in_BBX5_[:, 3]:  [40. 35. 32.  0.  0.  0.  0. 34. 64. 67.]
     seq_in_BBX5_[:, 4]:  [ 46.  46.  62.   0.   0.   0.   0.  63.  77. 144.]
     '''
-    if subj in C.subjects: subj_color = C.color_dict[C.color_ls[C.subjects.index(subj)]]
-    else: subj_color = C.color_dict[C.color_ls[-1]]
+    subj_color = C.color_dict[C.color_ls[subj_i % len(C.subjects)]]
 
     # print('C.subjects: ', C.subjects)
     # print('subj: ', subj)
@@ -721,7 +721,7 @@ def vis_tracklet(img, seq_in_BBX5_, subj):
                         int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
             img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
             # print('subj_color: ', subj_color, ', subj: ', subj, ', top_left: ', top_left, ', bottom_right: ', bottom_right)
-            if k_i == 0: img = cv2.putText(img, str(subj), top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, subj_color, 2, cv2.LINE_AA)
+            if k_i == 0: img = cv2.putText(img, C.vis_Cam_ID_ls[subj_i], top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, subj_color, 2, cv2.LINE_AA)
     return img
 
 def prepare_testing_data():
@@ -782,7 +782,7 @@ def prepare_testing_data():
     # print('len(C.RGB_ts16_dfv3_valid_ls): ', len(C.RGB_ts16_dfv3_valid_ls)) # e.g. 1800
     if C.vis:
         C.img_path = '../../../../Data/datasets/RAN/seqs/indoor/scene0/' + C.test_seq_id + '/' + C.img_type
-        print('C.img_path: ', C.img_path)
+        # print('C.img_path: ', C.img_path)
 
     # ------------------------------------------
     #  Synchronized data: BBX5,IMU19_sync_dfv3
@@ -870,8 +870,8 @@ def prepare_testing_data():
 
             # Last frame of a window
             subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + C.RGBh_ts16_dfv3_ls[win_i + C.recent_K - 1] + '_anonymized.jpg'
-            print(); print() # debug
-            print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
+            # print(); print() # debug
+            # print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
             img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
             # if '20201228' in C.seq_id:
             #     img = img[450:1730, 350:1070]
@@ -888,11 +888,11 @@ def prepare_testing_data():
 
             #  >>> Vis >>>
             # if C.vis: vis_tracklet(img, seq_in_BBX5_, C.subjects[subj_i])
-            if C.vis: img = vis_tracklet(img, seq_in_BBX5_, C.subjects[subj_i])
+            # if C.vis: img = vis_tracklet(img, seq_in_BBX5_, C.subjects[subj_i])
             #  <<< Vis <<<
         #  >>> Vis >>>
-        if C.vis:
-            cv2.imshow('img', img); cv2.waitKey(0)
+        # if C.vis:
+        #     cv2.imshow('img', img); cv2.waitKey(0)
         #  <<< Vis <<<
         # C.seq_subj_i_in_view_dict[C.RGB_ts16_dfv3_valid_ls[win_i]] = seq_subj_i_in_view_ls_
         C.seq_subj_i_in_view_dict[C.RGBh_ts16_dfv3_ls[win_i]] = seq_subj_i_in_view_ls_
@@ -1072,11 +1072,30 @@ def prepare_testing_data():
 def eval_association():
     for win_i in range(C.n_wins):
         ts16_dfv3 = C.RGBh_ts16_dfv3_ls[win_i] # C.RGB_ts16_dfv3_valid_ls[win_i]
+        #  >>> Vis >>>
+        if C.vis:
+            # subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + ts16_dfv3_to_ots26(C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]) + '.png'
+            # print('C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1]: ', C.RGB_ts16_dfv3_valid_ls[win_i + C.recent_K - 1])
+
+            # Last frame of a window
+            subj_i_RGB_ts16_dfv3_img_path = C.img_path + '/' + C.RGBh_ts16_dfv3_ls[win_i + C.recent_K - 1 - 1] + '_anonymized.jpg'
+            # print(); print() # debug
+            # print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
+            img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
+            # if '20201228' in C.seq_id:
+            #     img = img[450:1730, 350:1070]
+            # cv2.imshow('img', img); cv2.waitKey(0) # Debug
+        #  <<< Vis <<<
+
         if ts16_dfv3 in C.seq_subj_i_in_view_dict.keys():
             print()
             seq_subj_i_in_view_ls_ = C.seq_subj_i_in_view_dict[ts16_dfv3]
             print('seq_subj_i_in_view_ls_: ', seq_subj_i_in_view_ls_) # e.g. [1, 2, 3, 4]
             print(C.args)
+
+            rand_seq_subj_i_in_view_ls = copy.deepcopy(seq_subj_i_in_view_ls_)
+            random.shuffle(rand_seq_subj_i_in_view_ls)
+            print('rand_seq_subj_i_in_view_ls: ', rand_seq_subj_i_in_view_ls)
 
             n = len(seq_subj_i_in_view_ls_)
             if n > 0:
@@ -1089,6 +1108,14 @@ def eval_association():
                 for r_i, subj_i_r in enumerate(seq_subj_i_in_view_ls_):
                     dist_Cam_row, dist_Phone_row = [], []
                     seq_in_BBX5_r = C.seq_in_BBX5_dict[(win_i, subj_i_r)]
+
+                    # print('\n subj_i_r: ', subj_i_r, ', C.subjects[subj_i_r]: ', C.subjects[subj_i_r]); HERE
+                    # print('np.shape(seq_in_BBX5_r): ', np.shape(seq_in_BBX5_r));
+                    # e.g. (1, 10, 5)
+                    #  >>> Vis >>>
+                    if C.vis: img = vis_tracklet(img, np.squeeze(seq_in_BBX5_r, axis=0), rand_seq_subj_i_in_view_ls[subj_i_r])
+                    #  <<< Vis <<<
+
                     # if subj_i_r in range(len(C.subjects)):
                     #     seq_in_BBX5_r = C.seq_in_BBX5_dict[(win_i, subj_i_r)]
                     # else:
@@ -1455,6 +1482,8 @@ def eval_association():
                 C.eval_log_file.write(str(la_res_dict) + '\n\n')
                 C.eval_log_file.flush()
                 # e.g. shape(A):  (3, 5) , seq_subj_i_in_view_ls_:  [0, 1, 4] , row_ind:  [0 1 2] , col_ind:  [3 2 4]
+
+        if C.vis: cv2.imshow('img', img); cv2.waitKey(0)
 
     print()
 

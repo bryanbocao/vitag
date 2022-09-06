@@ -690,7 +690,12 @@ def Simplified_Bhatt_dist(mu0, std0, mu1, std1):
     term1 = np.divide(sqrt_diff_mu, sum_var)
     return np.add(term0, term1)
 
-def vis_tracklet(img, seq_in_BBX5_, subj_i):
+def vis_tracklet(img, seq_in_BBX5_, subj_i, Cam_ID, Phone_PRED, Phone_GND):
+    # subj_i, \
+    # rand_seq_subj_i_in_view_ls[i], \
+    # gd_pred_phone_i_Phone_ls[i], # PRED
+    # seq_subj_i # GND
+    # )
     # print(); print() # debug
     # print(C.subjects[subj_i], ', np.shape(seq_in_BBX5_): ', np.shape(seq_in_BBX5_)) # e.g. (10, 5)
     # print('seq_in_BBX5_[:, 0]: ', seq_in_BBX5_[:, 0]) # col
@@ -721,7 +726,15 @@ def vis_tracklet(img, seq_in_BBX5_, subj_i):
                         int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
             img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
             # print('subj_color: ', subj_color, ', subj: ', subj, ', top_left: ', top_left, ', bottom_right: ', bottom_right)
-            if k_i == 0: img = cv2.putText(img, C.vis_Cam_ID_ls[subj_i], top_left, cv2.FONT_HERSHEY_SIMPLEX, 1, subj_color, 2, cv2.LINE_AA)
+            if k_i == C.recent_K - 2:
+                text = Cam_ID + ':' + str(C.subjects[Phone_PRED]) + ' GT: ' + str(C.subjects[Phone_GND])
+                img = cv2.putText(img, text, top_left, \
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (subj_color[0] + 70, subj_color[1] + 70, subj_color[2] + 70), 2, cv2.LINE_AA)
+
+
+    # (450, 1300)
+    img = cv2.putText(img, '[Letter: Randomly Assigned Cam ID]:[Estimated Output] GT: Ground Truth', (450, 100), \
+        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
     return img
 
 def prepare_testing_data():
@@ -1112,9 +1125,6 @@ def eval_association():
                     # print('\n subj_i_r: ', subj_i_r, ', C.subjects[subj_i_r]: ', C.subjects[subj_i_r]); HERE
                     # print('np.shape(seq_in_BBX5_r): ', np.shape(seq_in_BBX5_r));
                     # e.g. (1, 10, 5)
-                    #  >>> Vis >>>
-                    if C.vis: img = vis_tracklet(img, np.squeeze(seq_in_BBX5_r, axis=0), rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(subj_i_r)])
-                    #  <<< Vis <<<
 
                     # if subj_i_r in range(len(C.subjects)):
                     #     seq_in_BBX5_r = C.seq_in_BBX5_dict[(win_i, subj_i_r)]
@@ -1280,6 +1290,17 @@ def eval_association():
                         else: # Predicted as passer-by
                             gd_ts16_dfv3_Phone_TN += 1
                             gd_ts16_dfv3_Phone_correct_num += 1
+
+                    #  >>> Vis >>>
+                    if C.vis:
+                        seq_in_BBX5_ = C.seq_in_BBX5_dict[(win_i, seq_subj_i)]
+                        img = vis_tracklet(img, np.squeeze(seq_in_BBX5_, axis=0), \
+                            seq_subj_i, \
+                            C.vis_Cam_ID_ls[rand_seq_subj_i_in_view_ls[seq_subj_i]], \
+                            gd_pred_phone_i_Phone_ls[i], # PRED
+                            seq_subj_i # GND
+                            )
+                    #  <<< Vis <<<
 
                 # >>> IDSWITCH >>>
                 # if win_i > 0:
@@ -1477,7 +1498,7 @@ def eval_association():
                     'row_ind_Phone' : row_ind_Phone, 'col_ind_Phone' : col_ind_Phone}
 
                 #  >>> Vis Matched Results >>>
-                if C.vis: img = vis_tracklet(img, np.squeeze(seq_in_BBX5_r, axis=0), rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(subj_i_r)])
+                # if C.vis: img = vis_tracklet(img, np.squeeze(seq_in_BBX5_r, axis=0), rand_seq_subj_i_in_view_ls[seq_subj_i_in_view_ls_.index(subj_i_r)])
                 #  <<< Vis Matched Results <<<
 
                 print(la_res_dict)

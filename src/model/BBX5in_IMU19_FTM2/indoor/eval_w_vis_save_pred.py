@@ -1517,7 +1517,8 @@ def eval_association():
                 C.eval_log_file.flush()
                 # e.g. shape(A):  (3, 5) , seq_subj_i_in_view_ls_:  [0, 1, 4] , row_ind:  [0 1 2] , col_ind:  [3 2 4]
 
-        if C.vis: cv2.imshow('img', img); cv2.waitKey(0)
+        if C.vis:
+            cv2.imshow('img', img); cv2.waitKey(10)
 
     print()
 

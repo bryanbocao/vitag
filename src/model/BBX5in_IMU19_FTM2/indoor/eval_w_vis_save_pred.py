@@ -117,6 +117,8 @@ class Config:
         self.parser.add_argument('-tt', '--test_type', type=str, default='random', help='random | crowded') # edit
         self.parser.add_argument('-fps', '--fps', type=int, default=10, help='10 | 3 | 1') # edit
         self.parser.add_argument('-v', '--vis', action='store_true', help='Visualization')
+        self.parser.add_argument('-vt', '--vis_type', type=str, help='WIN_BBOX | SINGLE_BBOX | BBOX_dots')
+        self.parser.add_argument('-sv', '--save_vis', action='store_true')
         self.parser.add_argument('-k', '--recent_K', type=int, default=10, help='Window length') # edit
         self.parser.add_argument('-l', '--loss', type=str, default='mse', help='mse: Mean Squared Error | b: Bhattacharyya Loss')
         self.parser.add_argument('-bw', '--best_weight', action='store_true')
@@ -180,9 +182,11 @@ class Config:
         #  Visualization
         # ---------------
         self.vis = self.args.vis # edit
+        self.vis_type = self.args.vis_type
+        self.save_vis = self.args.save_vis
         self.RGB_ts16_dfv3_path = ''
         self.vis_Cam_ID_ls = ['A', 'B', 'C', 'D', 'E']
-        self.text_start_col = 450
+        self.text_start_col = 455
         self.text_start_row = 1110
 
         # -------
@@ -720,14 +724,36 @@ def vis_tracklet(img, seq_in_BBX5_, subj_i, Cam_ID, Phone_PRED, Phone_GND, curr_
 
     for k_i in range(C.recent_K):
         if k_i < len(seq_in_BBX5_) - 1:
-            top_left = (int(seq_in_BBX5_[k_i, 0]) - int(seq_in_BBX5_[k_i, 3] / 2), \
-                        int(seq_in_BBX5_[k_i, 1]) - int(seq_in_BBX5_[k_i, 4] / 2))
-            bottom_right = (int(seq_in_BBX5_[k_i, 0]) + int(seq_in_BBX5_[k_i, 3] / 2), \
-                        int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
-            img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
+            if C.vis_type == 'WIN_BBOX':
+                top_left = (int(seq_in_BBX5_[k_i, 0]) - int(seq_in_BBX5_[k_i, 3] / 2), \
+                            int(seq_in_BBX5_[k_i, 1]) - int(seq_in_BBX5_[k_i, 4] / 2))
+                bottom_right = (int(seq_in_BBX5_[k_i, 0]) + int(seq_in_BBX5_[k_i, 3] / 2), \
+                            int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
+                img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
+            elif C.vis_type == 'BBOX_dots':
+                if k_i < C.recent_K - 2:
+                    radius, thickness = 2, 2
+                    center_coordinates = (int(seq_in_BBX5_[k_i, 0]), \
+                                int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
+                    img = cv2.circle(img, center_coordinates, radius, subj_color, thickness)
+                elif k_i == C.recent_K - 2:
+                    top_left = (int(seq_in_BBX5_[k_i, 0]) - int(seq_in_BBX5_[k_i, 3] / 2), \
+                                int(seq_in_BBX5_[k_i, 1]) - int(seq_in_BBX5_[k_i, 4] / 2))
+                    bottom_right = (int(seq_in_BBX5_[k_i, 0]) + int(seq_in_BBX5_[k_i, 3] / 2), \
+                                int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
+                    img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
+            else: # C.vis_type == 'SINGLE_BBOX':
+                if k_i == C.recent_K - 2:
+                    top_left = (int(seq_in_BBX5_[k_i, 0]) - int(seq_in_BBX5_[k_i, 3] / 2), \
+                                int(seq_in_BBX5_[k_i, 1]) - int(seq_in_BBX5_[k_i, 4] / 2))
+                    bottom_right = (int(seq_in_BBX5_[k_i, 0]) + int(seq_in_BBX5_[k_i, 3] / 2), \
+                                int(seq_in_BBX5_[k_i, 1]) + int(seq_in_BBX5_[k_i, 4] / 2))
+                    img = cv2.rectangle(img, top_left, bottom_right, subj_color, 2)
+
             # print('subj_color: ', subj_color, ', subj: ', subj, ', top_left: ', top_left, ', bottom_right: ', bottom_right)
             if k_i == C.recent_K - 2:
-                text = Cam_ID + ':' + str(C.subjects[Phone_PRED]) + ' GT: ' + str(C.subjects[Phone_GND])
+                # text = Cam_ID + '-' + str(C.subjects[Phone_PRED]) + ' GT: ' + str(C.subjects[Phone_GND])
+                text = Cam_ID + '-' + str(Phone_PRED) + ' GT: ' + str(Phone_GND)
                 img = cv2.putText(img, text, top_left, \
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (subj_color[0] + 100, subj_color[1] + 100, subj_color[2] + 100), 2, cv2.LINE_AA)
 
@@ -896,6 +922,7 @@ def prepare_testing_data():
             # print(); print() # debug
             # print('subj_i_RGB_ts16_dfv3_img_path: ', subj_i_RGB_ts16_dfv3_img_path)
             img = cv2.imread(subj_i_RGB_ts16_dfv3_img_path)
+            # img = img[350:1355, 450:1740]
             # if '20201228' in C.seq_id:
             #     img = img[450:1730, 350:1070]
             # cv2.imshow('img', img); cv2.waitKey(0) # Debug
@@ -1050,6 +1077,7 @@ def prepare_testing_data():
 #  Evaluate Association
 # ----------------------
 def eval_association():
+    save_frame_i = 1
     for win_i in range(C.n_wins):
         ts16_dfv3 = C.RGBh_ts16_dfv3_ls[win_i] # C.RGB_ts16_dfv3_valid_ls[win_i]
         #  >>> Vis >>>
@@ -1474,7 +1502,17 @@ def eval_association():
                 # e.g. shape(A):  (3, 5) , seq_subj_i_in_view_ls_:  [0, 1, 4] , row_ind:  [0 1 2] , col_ind:  [3 2 4]
 
         if C.vis:
-            cv2.imshow('img', img); cv2.waitKey(10)
+            # cv2.imshow('img', img); cv2.waitKey(10)
+            # cv2.imshow('img', img[340:1240, 430:1750]); cv2.waitKey(10)
+            cv2.imshow('img', img[349:1235, 450:1730]); cv2.waitKey(10)
+
+        if C.save_vis:
+            write_folder = './' + C.vis_type
+            if not os.path.exists(write_folder): os.makedirs(write_folder)
+            write_path = write_folder + '/frame_{:05}.jpg'.format(save_frame_i)
+            # cv2.imwrite(write_path, img[340:1240, 430:1750])
+            cv2.imwrite(write_path, img[349:1235, 450:1730])
+            save_frame_i += 1
 
     print()
 

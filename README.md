@@ -2,7 +2,7 @@
 
 Repository of our paper accepted in SECON 2022:
 
-**Bryan Bo Cao**, Abrar Alali, Hansi Liu, Nicholas Meegan, Marco Gruteser, Kristin Dana, Ashwin Ashok, Shubham Jain, **ViTag: Online WiFi Finite Time Measurements Aided Vision-Motion Identity Association in Multi-person Environments**, 2022 19th Annual IEEE International Conference on Sensing, Communication, and Networking (SECON).
+**Bryan Bo Cao**, Abrar Alali, Hansi Liu, Nicholas Meegan, Marco Gruteser, Kristin Dana, Ashwin Ashok, Shubham Jain, **ViTag: Online WiFi Fine Time Measurements Aided Vision-Motion Identity Association in Multi-person Environments**, 2022 19th Annual IEEE International Conference on Sensing, Communication, and Networking (SECON).
 
 ## Abstract
 We demonstrate our system _ViTag_ to associate user identities across multimodal data from cameras and smartphones. _ViTag_ associates a sequence of vision tracker generated bounding boxes with Inertial Measurement Unit (IMU) data and Wi-Fi Fine Time Measurements (FTM) from smartphones. Our system first performs cross-modal translation using a multimodal LSTM encoder-decoder network (_X-Translator_) that translates one modality to another, e.g. reconstructing IMU and FTM readings purely from camera bounding boxes. Next, an association module finds identity matches between camera and phone domains, where the translated modality is then matched with the observed data from the same modality. Our system performs in real-world indoor and outdoor environments and achieves an average Identity Precision Accuracy (IDP) of 88.39% on a 1 to 3 seconds window. Further study on modalities within the phone domain shows the FTM can improve association performance by 12.56% on average.

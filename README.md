@@ -205,3 +205,7 @@ python3 eval_prct.py -fps 10 -tt rand_ss -k 10 -tsid_idx 0 -nl 0.1
 
 # Vi-Fi Dataset
 [Dataset link](https://sites.google.com/winlab.rutgers.edu/vi-fidataset/home)
+
+# Acknowledgement
+This research has been supported by the National Science Foundation (NSF) under Grant Nos. CNS-2055520, CNS1901355, CNS-1901133. 
+We thank Rashed Rahman,Shardul Avinash, Abbaas Alif, Bhagirath Tallapragada and Kausik Amancherla for their help with data labeling.

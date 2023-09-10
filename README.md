@@ -211,6 +211,19 @@ python3 eval_prct.py -fps 10 -tt rand_ss -k 10 -tsid_idx 0 -nl 0.1
 
 [paperswithcode link](https://paperswithcode.com/dataset/vi-fi-multi-modal-dataset)
 
+# Citation
+BibTeX:
+```
+@inproceedings{cao2022vitag,
+  title={ViTag: Online WiFi Fine Time Measurements Aided Vision-Motion Identity Association in Multi-person Environments},
+  author={Cao, Bryan Bo and Alali, Abrar and Liu, Hansi and Meegan, Nicholas and Gruteser, Marco and Dana, Kristin and Ashok, Ashwin and Jain, Shubham},
+  booktitle={2022 19th Annual IEEE International Conference on Sensing, Communication, and Networking (SECON)},
+  pages={19--27},
+  year={2022},
+  organization={IEEE}
+}
+```
+
 # Acknowledgement
 This research has been supported by the National Science Foundation (NSF) under Grant Nos. CNS-2055520, CNS1901355, CNS-1901133. 
 We thank Rashed Rahman,Shardul Avinash, Abbaas Alif, Bhagirath Tallapragada and Kausik Amancherla for their help with data labeling.

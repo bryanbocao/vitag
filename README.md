@@ -69,7 +69,7 @@ conda activate via
 This repository contains two main steps: (1) [Data Conversion](https://github.com/bryanbocao/vitag/tree/main/src/data_converters) and (2) [Model](https://github.com/bryanbocao/vitag/tree/main/src/model). **(1) Data Conversion** preprocesses and synchronizes the raw data to prepare a synchronized dataset for **(2) Model**'s usage in a neat way. We provide the processed(RAN4model_dfv3) datasets so that skip the first part and run the second part of model scripts directly.
 
 ## Dataset for Model - dfv3
-Download [RAN4model](https://drive.google.com/drive/folders/1ETKgtK0Vs0Y8zCcEIfw8-2EyMOgHPIyL?usp=sharing) and follow the folder structure:
+Download ```RAN4model``` [[Google Drive](https://drive.google.com/file/d/119aXAow_svc8NuIGbsXDoZgDTa_kyVzT/view?usp=sharing)] [[OneDrive](https://1drv.ms/u/s!AqkVlEZgdjnYi1NHD5LPJeSQ3XiO?e=vcx43N)] and follow the folder structure:
 ```
 vitag
   |-Data

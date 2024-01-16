@@ -212,7 +212,7 @@ python3 eval_prct.py -fps 10 -tt rand_ss -k 10 -tsid_idx 0 -nl 0.1
 [paperswithcode link](https://paperswithcode.com/dataset/vi-fi-multi-modal-dataset)
 
 # Citation
-BibTeX:
+ViTag BibTeX:
 ```
 @inproceedings{cao2022vitag,
   title={ViTag: Online WiFi Fine Time Measurements Aided Vision-Motion Identity Association in Multi-person Environments},
@@ -224,7 +224,28 @@ BibTeX:
 }
 ```
 
-[Reality-Aware Networks group website link](https://ashwinashok.github.io/realityawarenetworks/)
+Vi-Fi (dataset) BibTex:
+```
+@inproceedings{liu2022vi,
+  title={Vi-Fi: Associating Moving Subjects across Vision and Wireless Sensors},
+  author={Liu, Hansi and Alali, Abrar and Ibrahim, Mohamed and Cao, Bryan Bo and Meegan, Nicholas and Li, Hongyu and Gruteser, Marco and Jain, Shubham and Dana, Kristin and Ashok, Ashwin and others},
+  booktitle={2022 21st ACM/IEEE International Conference on Information Processing in Sensor Networks (IPSN)},
+  pages={208--219},
+  year={2022},
+  organization={IEEE}
+}
+```
+```
+@misc{vifisite,
+  author        = "Hansi Liu",
+  title         = "Vi-Fi Dataset",
+  month         = "Dec. 05,", 
+  year          = "2022 [Online]",
+  url           = "https://sites.google.com/winlab.rutgers.edu/vi-fidataset/home"
+}
+```
+
+[Reality-Aware Networks Project Website](https://ashwinashok.github.io/realityawarenetworks/)
 
 # Acknowledgement
 This research has been supported by the National Science Foundation (NSF) under Grant Nos. CNS-2055520, CNS1901355, CNS-1901133. 

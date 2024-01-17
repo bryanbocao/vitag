@@ -86,6 +86,29 @@ class NpEncoder(json.JSONEncoder):
             return super(NpEncoder, self).default(obj)
 ```
 
+## Data Format
+The shape of one synchronized file follows this format:
+```
+(<WIN_IDX>, <SUBJ_IDX>, <DIM_PER_FRAME>, <FEAT_AXIS_IDX>)
+```
+where ```<WIN_IDX>``` is window index; ```<SUBJ_IDX>``` is subject index; ```<DIM_PER_FRAME>``` is number of dimensions in one frame, it is generally set to be 1 in this version, only used for data with sampling rate higher than the current synchronized data like denser IMU data; ```<FEAT_AXIS_IDX>``` is feature axis index.
+
+Below is an example of sequence ```20211007_144525``` in ```scene4```:
+```
+np.shape(BBXC3_sync_dfv4p4):  (1831, 3, 1, 3)
+np.shape(BBX5_sync_dfv4p4):  (1831, 3, 1, 5)
+np.shape(IMU19_sync_dfv4p4):  (1831, 3, 1, 19)
+np.shape(IMUlgq10_sync_dfv4p4):  (1831, 3, 1, 10)
+np.shape(IMUlgqm13_sync_dfv4p4):  (1831, 3, 1, 13)
+np.shape(IMUagm9_sync_dfv4p4):  (1831, 3, 1, 9)
+np.shape(FTM_sync_dfv4p4):  (1831, 3, 1, 2)
+np.shape(FTM_li_sync_dfv4p4):  (1831, 3, 1, 2)
+np.shape(RSSI_sync_dfv4p4):  (1831, 3, 1, 1)
+np.shape(RSSI_li_sync_dfv4p4):  (1831, 3, 1, 1)
+len(RGB_ts16_dfv4p4_ls):  2001
+```
+The synchronized data treats RGB frame as anchor where all frames named after timestamps (ts16) are saved in ```RGB_ts16_dfv4p4_ls```. In this example, sequence ```20211007_144525``` has ```2001``` frames.
+
 # Vi-Fi Dataset
 [Official Dataset link](https://sites.google.com/winlab.rutgers.edu/vi-fidataset/home)
 

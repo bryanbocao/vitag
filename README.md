@@ -207,6 +207,9 @@ python3 eval_prct.py -fps 10 -tt rand_ss -k 10 -tsid_idx 0 -nl 0.1
 ---
 
 # Vi-Fi Dataset
+
+**New** 01/16/2024: We released the synchronized version (**RAN4model_dfv4p4**) of our data for future usage. This version is convenient for your research without undergoing preprocessing the raw data again. Check out the details in the [DATA.md](https://github.com/bryanbocao/vitag/blob/main/DATA.md) file.
+
 [Dataset link](https://sites.google.com/winlab.rutgers.edu/vi-fidataset/home)
 
 [paperswithcode link](https://paperswithcode.com/dataset/vi-fi-multi-modal-dataset)

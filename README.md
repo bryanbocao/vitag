@@ -7,6 +7,14 @@ Repository of our paper accepted in [SECON 2022](https://secon2022.ieee-secon.or
 **Bryan Bo Cao**, Abrar Alali, Hansi Liu, Nicholas Meegan, Marco Gruteser, Kristin Dana, Ashwin Ashok, Shubham Jain, **Demo: Tagging Vision with Smartphone Identities by Vision2Phone Translation**, 2022 19th Annual IEEE International Conference on Sensing, Communication, and Networking (SECON).
 Received **[Best Demonstration Award](https://secon2022.ieee-secon.org/program/)**
 
+# Vi-Fi Dataset
+
+**New** 01/16/2024: We released the synchronized version (**RAN4model_dfv4p4**) of our data for future usage. This version is convenient for your research without undergoing preprocessing the raw data again. Check out the details in the [DATA.md](https://github.com/bryanbocao/vitag/blob/main/DATA.md) file.
+
+[Dataset(raw data) link](https://sites.google.com/winlab.rutgers.edu/vi-fidataset/home)
+
+[paperswithcode link](https://paperswithcode.com/dataset/vi-fi-multi-modal-dataset)
+
 ## Abstract
 We demonstrate our system _ViTag_ to associate user identities across multimodal data from cameras and smartphones. _ViTag_ associates a sequence of vision tracker generated bounding boxes with Inertial Measurement Unit (IMU) data and Wi-Fi Fine Time Measurements (FTM) from smartphones. Our system first performs cross-modal translation using a multimodal LSTM encoder-decoder network (_X-Translator_) that translates one modality to another, e.g. reconstructing IMU and FTM readings purely from camera bounding boxes. Next, an association module finds identity matches between camera and phone domains, where the translated modality is then matched with the observed data from the same modality. Our system performs in real-world indoor and outdoor environments and achieves an average Identity Precision Accuracy (IDP) of 88.39% on a 1 to 3 seconds window. Further study on modalities within the phone domain shows the FTM can improve association performance by 12.56% on average.
 
@@ -205,14 +213,6 @@ python3 eval_prct.py -fps 10 -tt rand_ss -k 10 -tsid_idx 0 -nl 0.1
 ```
 
 ---
-
-# Vi-Fi Dataset
-
-**New** 01/16/2024: We released the synchronized version (**RAN4model_dfv4p4**) of our data for future usage. This version is convenient for your research without undergoing preprocessing the raw data again. Check out the details in the [DATA.md](https://github.com/bryanbocao/vitag/blob/main/DATA.md) file.
-
-[Dataset link](https://sites.google.com/winlab.rutgers.edu/vi-fidataset/home)
-
-[paperswithcode link](https://paperswithcode.com/dataset/vi-fi-multi-modal-dataset)
 
 # Citation
 ViTag BibTeX:

@@ -109,6 +109,25 @@ len(RGB_ts16_dfv4p4_ls):  2001
 ```
 The synchronized data treats RGB frame as anchor where all frames named after timestamps (ts16) are saved in ```RGB_ts16_dfv4p4_ls```. In this example, sequence ```20211007_144525``` has ```2001``` frames.
 
+## Visualization
+Below are some visualizations of the data for ```subj0``` in sequence ```20211007_144525```. Note that by default, missing data points used nearest timestamp in the anchor (RGB) frame. Another way is by _linear interpolation_ denoted by ```li```, which is used to fill the missing data points of a modality (FTM or RSSI in 3FPS compared to RGB in 10FPS) by linearly interpolation between the borders of two consecutive logged data points.
+
+### BBX5
+<img width="1040" alt="20211007_144525_BBX5" src="https://github.com/bryanbocao/vitag/assets/14010288/b209024a-6fb8-42e4-a741-3dae63df020d">
+
+### IMU19
+<img width="1066" alt="20211007_144525_IMU19" src="https://github.com/bryanbocao/vitag/assets/14010288/e99744d9-1238-4ace-b1b5-7bbce57c4610">
+
+### IMUagm19
+<img width="1062" alt="20211007_144525_IMUagm9" src="https://github.com/bryanbocao/vitag/assets/14010288/d64df45c-8fd2-4804-9fe8-ffcac9091501">
+
+### FTM & FTM_li
+<img width="1078" alt="20211007_144525_FTM_FTM_li" src="https://github.com/bryanbocao/vitag/assets/14010288/7fe52363-6908-4729-85cb-acbcb620c00e">
+
+### RSSI & RSSI_li
+<img width="1068" alt="20211007_144525_RSSI_RSSI_li" src="https://github.com/bryanbocao/vitag/assets/14010288/8ffe752e-c1a4-4619-9bbd-2b7400a69a2d">
+
+
 # Vi-Fi Dataset
 [Official Dataset link](https://sites.google.com/winlab.rutgers.edu/vi-fidataset/home)
 

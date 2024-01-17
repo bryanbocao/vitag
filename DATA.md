@@ -62,6 +62,30 @@ RAN4model_dfv4p4
        ...
 ```
 
+## Data Loading
+```
+import pickle as pkl
+with open(<M_sync_dfv4p4_path>, 'rb') as f:
+    M_sync_dfv4p4 = pkl.load(f); print(f'{M_sync_dfv4p4_path} loaded!')
+```
+where ```M``` stands for ```modality```. You may replace ```M``` with any modality such as ```BBX5_sync_dfv4p4```.
+
+When loading the json file, in case of the ```not JSON serializable``` error, add the following lines of code:
+```
+# TypeError: Object of <some_code> is not JSON serializable
+# Ref: https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable
+class NpEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.integer):
+            return int(obj)
+        elif isinstance(obj, np.floating):
+            return float(obj)
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        else:
+            return super(NpEncoder, self).default(obj)
+```
+
 # Vi-Fi Dataset
 [Official Dataset link](https://sites.google.com/winlab.rutgers.edu/vi-fidataset/home)
 

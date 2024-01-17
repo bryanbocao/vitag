@@ -1,7 +1,7 @@
 # Data
 
 #### News:
-01/16/2024 We released the synchronized version (**RAN4model_dfv4p4**) of our data for future usage:
+01/16/2024 We released the synchronized version (**RAN4model_dfv4p4**) of our data for future usage. This version is convenient for your research without undergoing preprocessing the raw data again. You may find the download links in the table below:
 
 | | Google Drive | OneDrive|
 |--|--|--|
